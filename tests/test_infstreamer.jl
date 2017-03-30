@@ -1,6 +1,6 @@
 # tests the token feeding to model
 using Knet
-include("../infst.jl")
+include("../util/infst.jl")
 
 
 function testfeed()

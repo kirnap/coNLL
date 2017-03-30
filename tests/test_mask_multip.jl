@@ -1,6 +1,6 @@
 using Knet
-include("../chproces.jl")
-include("../infst.jl")
+include("../util/chproces.jl")
+include("../util/infst.jl")
 # test mask multiplication
 function initstate(atype, hiddens, batchsize)
     state = Array(Any, 2length(hiddens))

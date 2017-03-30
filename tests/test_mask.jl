@@ -1,6 +1,6 @@
 # test masking process
-include("../chproces.jl")
-include("../infst.jl")
+include("../util/chproces.jl")
+include("../util/infst.jl")
 
 
 function get_desired_mask(data)
