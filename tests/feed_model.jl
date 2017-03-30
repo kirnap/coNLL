@@ -51,7 +51,7 @@ function feed_model()
     
     # crucial step to make model feasible
 
-    global omer_i2c = i2c
+    # global omer_i2c = i2c open that line for testing
     for (item,mask) in zip(data, masks)
         cbon = convert(atype, item)
         chmask = convert(atype, mask)
@@ -63,7 +63,7 @@ function feed_model()
 end
 !isinteractive() && feed_model()
 
-# add these lines to model.jl file in lines just after chlstm definition
+#add these lines to model.jl file in lines just after chlstm definition
 
 #input_check = convert(Array{Float32}, input);mask_check = convert(Array{Float32}, mask)
 #chars=Any[];for i=1:size(input)[1];z = find(x->x==true, input_check[i, :]); append!(chars, omer_i2c[z]);end;
