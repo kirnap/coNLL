@@ -56,6 +56,7 @@ function feed_model()
         cbon = convert(atype, item)
         chmask = convert(atype, mask)
         masbon = convert(atype, chmask)
+        #lval = chlstm(m[:char][1], m[:char][2], schar[1], schar[2], cbon; mask=masbon)[1]
         lval = chforw(m[:char], schar, cbon; mask=masbon)
         @show sum(lval)
     end
