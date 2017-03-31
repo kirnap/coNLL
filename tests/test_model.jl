@@ -9,7 +9,7 @@ function test_model()
 
     # word model initialization
     ptb = open("../ptb/ptb.train.txt")
-    sdict = Dict{Int64, Array{Any, 1}}(); ulimit=35; maxlines = 500; batchsize = 6;
+    sdict = Dict{Int64, Array{Any, 1}}(); ulimit=35; maxlines = 500; batchsize = 20;
     word_vocab = create_vocab("../ptb/ptb.vocab")
     readstream!(ptb, sdict, word_vocab;maxlines=1000, ulimit=ulimit)
     ids = nextbatch(ptb, sdict, word_vocab, batchsize; ulimit=ulimit, maxlis=maxlines)
@@ -43,10 +43,12 @@ function test_model()
     lval = charbilstm(m, schar, states, ids, i2w, ch1, val)
     @show val
     @show lval
-    ids = nextbatch(ptb, sdict, word_vocab, batchsize; ulimit=ulimit, maxlis=maxlines)
-    lval = charbilstm(m, schar, states, ids, i2w, ch1, val)
-    
-    gs = gradcharbilstm(m, schar, states, ids, i2w, ch1, val)
+    while ids != nothing
+        charbilstm(m, schar, states, ids, i2w, ch1, val)
+        ids = nextbatch(ptb, sdict, word_vocab, batchsize; ulimit=ulimit, maxlines=maxlines)
+        @show mean(val)
+    end
+    return mean(val)
     @show val
     
     

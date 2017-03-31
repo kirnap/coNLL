@@ -19,7 +19,7 @@ function testfeed()
     maxlines = 500
     word_vocab = create_vocab("../ptb/ptb.vocab")
     readstream!(ptb, sdict, word_vocab;maxlines=1000, ulimit=ulimit)
-    ids = nextbatch(ptb, sdict, word_vocab, batchsize; ulimit=ulimit, maxlis=maxlines)
+    ids = nextbatch(ptb, sdict, word_vocab, batchsize; ulimit=ulimit, maxlines=maxlines)
 
     index_to_word = Array(AbstractString, length(word_vocab))
     for (k, v) in word_vocab; index_to_word[v] = k; end;
