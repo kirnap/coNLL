@@ -94,3 +94,19 @@ function charbilstm(model, chstates, states, sequence, i2w, chvocab, lval=[])
 end
 
 gradcharbilstm = grad(charbilstm)
+
+
+function train(model, chstates, states, sequence, i2w, chvocab, lval, opts)
+    gloss = gradcharbilstm(model, chstates, states, sequence, i2w, chvocab, lval)
+    update!(model, gloss, opts)
+    return lval
+end
+
+
+function devperp(m, schar, sdev, dev, i2w, ch1)
+    devloss = []
+    for d in dev
+        charbilstm(m, schar, sdev, d, i2w, ch1, devloss)
+    end
+    return exp(mean(devloss))
+end
