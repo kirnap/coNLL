@@ -52,7 +52,7 @@ function charembed(mchar, states, words, i2w, ch, atype)
 end
 
 
-function charbilstm(model, chstates, states, sequence, i2w, chvocab)
+function charbilstm(model, chstates, states, sequence, i2w, chvocab, lval=[])
     total = 0.0
     count = 0
     atype = typeof(states[1])
@@ -87,7 +87,10 @@ function charbilstm(model, chstates, states, sequence, i2w, chvocab)
         total += logprob(sequence[i], ypred)
         count += length(sequence[i])
     end
-    return - total / count
+
+    val = - total /count
+    push!(lval, AutoGrad.getval(val))
+    return val
 end
 
 gradcharbilstm = grad(charbilstm)
