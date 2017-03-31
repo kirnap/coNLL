@@ -13,25 +13,33 @@ function testfeed()
     
 
     # prepare train data
-    ptb = open("../ptb/ptb.train.txt")
-    sdict = Dict{Int64, Array{Any, 1}}();
     ulimit = 40
     maxlines = 500
     word_vocab = create_vocab("../ptb/ptb.vocab")
-    readstream!(ptb, sdict, word_vocab;maxlines=1000, ulimit=ulimit)
-    ids = nextbatch(ptb, sdict, word_vocab, batchsize; ulimit=ulimit, maxlines=maxlines)
-
-    index_to_word = Array(AbstractString, length(word_vocab))
-    for (k, v) in word_vocab; index_to_word[v] = k; end;
+    (ptb, sdict) = create_data_environment("../ptb/ptb.train.txt", word_vocab; ulimit=ulimit, maxlines=1000)
+        
 
     counter = 0
+    ids = nextbatch(ptb, sdict, word_vocab, batchsize; ulimit=ulimit, maxlines=maxlines)
     while ids != nothing
         ids = nextbatch(ptb, sdict, word_vocab, batchsize; ulimit=ulimit, maxlines=maxlines)
         counter += 1
     end
     info("nothing tests pass with $counter many lines")
 
-    return ids
+    for i=1:5
+        (ptb, sdict) = create_data_environment("../ptb/ptb.train.txt", word_vocab; ulimit=ulimit, maxlines=1000)
+        ids = nextbatch(ptb, sdict, word_vocab, batchsize; ulimit=ulimit, maxlines=maxlines)
+        counter = 0
+        while ids != nothing
+            ids = nextbatch(ptb, sdict, word_vocab, batchsize; ulimit=ulimit, maxlines=maxlines)
+            counter += 1
+        end
+        close(ptb)
+        info("nothing tests pass with $counter many lines in the $(i)th iteration")
+    end
+
+    return (ids, sdict)
 
 end
 !isinteractive() && testfeed()
