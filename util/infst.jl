@@ -122,5 +122,13 @@ function create_testdata(file::AbstractString, vocab::Dict{AbstractString, Int64
             push!(data, mbatch(sequence, batchsize))
         end
     end
+    close(stream)
     return data
+end
+
+function create_data_environment(f::AbstractString, vocab::Dict{AbstractString, Int64}; o...)
+    fdir = open(f)
+    sdict = Dict{Int64, Array{Any, 1}}()
+    readstream!(fdir, sdict, vocab; o...)
+    return (fdir, sdict)
 end
