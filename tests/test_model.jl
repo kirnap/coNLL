@@ -33,8 +33,22 @@ function test_model()
     # for i=1:length(ids)
     #     embeddings[i] = charembed(m[:char], schar, ids[i], i2w, ch1, atype)
     # end
-    lval = charbilstm(m, schar, states, ids, i2w, ch1)
+
+    # To make a gradcheck open the following 2 lines of code
+    #gradcheck(charbilstm, m, schar, states, ids, i2w, ch1; gcheck=30, verbose=true, atol=0.01)
+    #atype = Array{Float64}
+
+    
+    val = []
+    lval = charbilstm(m, schar, states, ids, i2w, ch1, val)
+    @show val
     @show lval
+    ids = nextbatch(ptb, sdict, word_vocab, batchsize; ulimit=ulimit, maxlis=maxlines)
+    lval = charbilstm(m, schar, states, ids, i2w, ch1, val)
+    
+    gs = gradcharbilstm(m, schar, states, ids, i2w, ch1, val)
+    @show val
+    
     
 end
 !isinteractive() && test_model()
