@@ -1,7 +1,7 @@
 using Knet
 include("../util/infst.jl")
 include("../util/chproces.jl")
-include("../models/model.jl")
+include("../models/charfinal_model.jl")
 
 function test_whole_feeding()
     atype = (gpu() >= 0 ? KnetArray{Float32} : Array{Float32})
@@ -35,7 +35,7 @@ function test_whole_feeding()
     hs = []
     h = zeros(similar(schar[1]))
     mtot = atype(zeros(similar(masks[1])))
-    # Here you are moving a single word forward
+    # Here you are moving a single word forward, these lines are to give an idea about how to update model files
     iteration=1;
     for (ch, mo) in zip(data, masks);
         @show iteration; iteration +=1

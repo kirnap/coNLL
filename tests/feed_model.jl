@@ -1,5 +1,5 @@
 using Knet
-include("../model.jl")
+include("../models/charfinal_model.jl")
 include("../util/infst.jl")
 include("../util/chproces.jl")
 function feed_model()
@@ -64,7 +64,7 @@ function feed_model()
 end
 !isinteractive() && feed_model()
 
-#add these lines to model.jl file in lines just after chlstm definition
+#add these lines to model script in lines just after chlstm definition
 #input_check = convert(Array{Float32}, input);mask_check = convert(Array{Float32}, mask)
 #chars=Any[];for i=1:size(input)[1];z = find(x->x==true, input_check[i, :]); append!(chars, omer_i2c[z]);end;
 # println("Input to char lstm! ")
