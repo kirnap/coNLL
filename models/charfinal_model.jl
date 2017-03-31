@@ -1,4 +1,4 @@
-# Single layer character based lstm, and bilstm for word substitution
+# Single layer character based lstm gets the final hidden state of the charlstm, and bilstm for word substitution
 
 # lstm weights initialization
 # w[2k-1], w[2k] : weight and bias for kth layer respectively
@@ -29,8 +29,9 @@ end
 
 function initmodel(atype, hiddens, charhidden, charvocab, wordvocab, init=xavier)
     model = Dict{Symbol, Any}()
-    model[:forw] = initweights(atype, hiddens, charhidden, init)
-    model[:back] = initweights(atype, hiddens, charhidden, init)
+    wordembedding = charhidden[1]
+    model[:forw] = initweights(atype, hiddens, wordembedding, init)
+    model[:back] = initweights(atype, hiddens, wordembedding, init)
     model[:char] = initweights(atype, charhidden, charvocab, init)
     model[:soft] = [ atype(init(2hiddens[end], wordvocab)), atype(init(1, wordvocab)) ]
     return model
@@ -87,27 +88,68 @@ function forward(weight, states, input)
 end
 
 
-function charbilstm(model, chstates, states, sequence, i2w, ch1; pdrop=(0,0))
+function charembed(mchar, states, words, i2w, ch, atype)
+    schar = copy(states)
+    
+    (data, masks) = charbatch(words, i2w, ch) # create minibatches of characters
+    h = zeros(similar(schar[1]))
+    for (c, m) in zip(data, masks)
+        cbon = convert(atype, c)
+        mbon = convert(atype, m)
+        h = chforw(mchar, schar, cbon; mask=mbon)
+    end
+    return h
+end
+
+
+function logprob(output, ypred)
+    nrows,ncols = size(ypred)
+    index = similar(output)
+    @inbounds for i=1:length(output)
+        index[i] = i + (output[i]-1)*nrows
+    end
+    o1 = logp(ypred,2)
+    o2 = o1[index]
+    o3 = sum(o2)
+    return o3
+end
+
+
+function charbilstm(model, chstates, states, sequence, i2w, chvocab)
     total = 0.0
     count = 0
-    atype = typeof(AutoGrad.getval(model[:soft][1]))
+    atype = typeof(states[1])
 
-    # get word embeddings
-    i2bilstm = []
-    for token in sequence
-        schar = copy(chstates)
-        (data, masks) = charbatch(token, i2w, ch1)
-        o1 = []
-        i = 1
-        for (ch, m) in zip(data, masks)
-            chgpu = convert(atype, ch)
-            mgpu = convert(atype, m)
-            h = chforw(model[:char], schar, chgpu; mask=mgpu)
-            push!(o1, h)	
-        end
-        batch_words = vcat(o1...)
-        push!(i2bilstm, batch_words)
+    # extract embeddings based on character reading
+    embeddings = Array(Any, length(sequence))
+    for i=1:length(sequence)
+        embeddings[i] = charembed(model[:char], chstates, sequence[i], i2w, chvocab, atype)
     end
 
-    return i2bilstm
+    # forward lstm
+    fhiddens = Array(Any, length(sequence))
+    sf = copy(states)
+    for i=1:length(sequence)-1
+        h = forward(model[:forw], sf, embeddings[i])
+        fhiddens[i+1] = copy(h)
+    end
+    fhiddens[1] = zeros(similar(fhiddens[2]))
+
+    # bacward lstm
+    bhiddens = Array(Any, length(sequence))
+    sb = copy(states)
+    for i=length(sequence):-1:2
+        h = forward(model[:back], sb, embeddings[i])
+        bhiddens[i-1] = copy(h)
+    end
+    bhiddens[end] = zeros(similar(bhiddens[2]))
+
+    # merge layer
+    for i=1:length(fhiddens)
+        ypred = hcat(fhiddens[i], bhiddens[i]) * model[:soft][1] .+ model[:soft][2]
+        total += logprob(sequence[i], ypred)
+        count += length(sequence[i])
+    end
+    return - total / count
+
 end

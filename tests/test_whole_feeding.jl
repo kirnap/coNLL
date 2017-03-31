@@ -1,14 +1,14 @@
 using Knet
 include("../util/infst.jl")
 include("../util/chproces.jl")
-include("../model.jl")
+include("../models/model.jl")
 
 function test_whole_feeding()
     atype = (gpu() >= 0 ? KnetArray{Float32} : Array{Float32})
 
     # word model initialization
     ptb = open("../ptb/ptb.train.txt")
-    sdict = Dict{Int64, Array{Any, 1}}(); ulimit=40; maxlines = 500; batchsize = 6;
+    sdict = Dict{Int64, Array{Any, 1}}(); ulimit=40; maxlines = 500; batchsize = 1;
     word_vocab = create_vocab("../ptb/ptb.vocab")
     readstream!(ptb, sdict, word_vocab;maxlines=1000, ulimit=ulimit)
     ids = nextbatch(ptb, sdict, word_vocab, batchsize; ulimit=ulimit, maxlis=maxlines)
@@ -43,16 +43,11 @@ function test_whole_feeding()
         mbon = convert(atype, mo)
         h1 = chforw(m[:char], schar, cbon; mask=mbon)
         mtot += mbon
-        h += h1
-        push!(hs, h1)
+        h = h1 # this line is for getting the final hidden state of the lstm
+        #h += h1 # this line is for averaging
+        push!(hs, h1) # The last item of hs is the final hidden state of the lstm
     end
     return (hs, h, mtot)
-
-
-    info("The sentence length is $(length(ids))")
-    i2bilstm  = charbilstm(m, schar, schar, ids, i2w, ch1)
-    @show length(i2bilstm)
-    return i2bilstm
 end
 !isinteractive() && test_whole_feeding()
 
