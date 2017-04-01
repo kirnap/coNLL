@@ -1,0 +1,21 @@
+savefile => nothing
+vocabfile => ptb/ptb.vocab
+batchsize => 25
+epochs => 10
+devfile => ptb/ptb.valid.txt
+trainfile => ptb/ptb.train.txt
+atype => KnetArray{Float32}
+embedding => 256
+gclip => 5.0
+hiddens => [300]
+Initial dev perplexity is 10011.386651882915
+Epoch 1 | dperp 84.6667444786629 | trainperp 178.4781757865699
+Epoch 2 | dperp 52.41800868312973 | trainperp 53.48280222762634
+Epoch 3 | dperp 44.79338777551821 | trainperp 31.21178853043945
+Epoch 4 | dperp 43.01663000781243 | trainperp 21.425323976068654
+Epoch 5 | dperp 43.67448411506564 | trainperp 15.662510290042729
+Epoch 6 | dperp 45.934366067604074 | trainperp 11.91257558083068
+Epoch 7 | dperp 49.717504238538126 | trainperp 9.366393786465034
+Epoch 8 | dperp 54.55754467348514 | trainperp 7.54339241379744
+Epoch 9 | dperp 59.74165642319484 | trainperp 6.2167281688351
+Epoch 10 | dperp 66.32808779701035 | trainperp 5.225729087453148
