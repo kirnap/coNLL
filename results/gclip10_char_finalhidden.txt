@@ -1,0 +1,20 @@
+vocabfile => ptb/ptb.vocab
+batchsize => 25
+epochs => 10
+devfile => ptb/ptb.valid.txt
+trainfile => ptb/ptb.train.txt
+atype => KnetArray{Float32}
+embedding => 256
+gclip => 10.0
+hiddens => [300]
+Initial devperp 9991.579229496521
+Epoch 1 | dperp 294.2557136267863 | trainperp 327.9930693602193
+Epoch 2 | dperp 285.22740569105497 | trainperp 233.40906098157146
+Epoch 3 | dperp 290.14325767171533 | trainperp 196.312467157483
+Epoch 4 | dperp 283.05332657902113 | trainperp 165.39291050234465
+Epoch 5 | dperp 266.2793950942658 | trainperp 137.0193758125324
+Epoch 6 | dperp 261.3818994305074 | trainperp 111.53885986681959
+Epoch 7 | dperp 262.85483940271666 | trainperp 91.43854961659162
+Epoch 8 | dperp 271.3173941162882 | trainperp 75.7124310668867
+Epoch 9 | dperp 282.8481209825706 | trainperp 63.511688648340815
+Epoch 10 | dperp 292.9122667215884 | trainperp 53.879335939496144
