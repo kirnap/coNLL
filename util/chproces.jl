@@ -1,8 +1,10 @@
-const PAD = '\u2200'
+const PAD = '⋮'
+const SOW = '↥'
+const EOW = 'Ϟ'
 
 
 function create_chvocab(f::AbstractString)
-    res = Dict{Char, Int}(PAD=>1)
+    res = Dict{Char, Int}(PAD=>1, SOW=>2, EOW=>3)
     stream = open(f)
     for line in eachline(f)
         for char in line
@@ -21,6 +23,25 @@ function w2cs(windex::Int32, i2w::Array{AbstractString,1}, chvoc::Dict{Char, Int
         res[i] = chvoc[word[i]]
     end
     return res
+end
+
+
+function cbatch4conv(wids::Array{Int32, 1}, i2w::Array{AbstractString, 1}, ch::Dict{Char, Int})
+    words = map(x->i2w[x], wids)
+    batchsize = length(words)
+    d = Array(Any, batchsize)
+    for w=1:batchsize
+        word = words[w]
+        wlen = length(word)
+        inds = Array(Int, wlen+2)
+        inds[1] = ch[SOW]
+        @inbounds for i=1:wlen
+            inds[i+1] = ch[word[i]]
+        end
+        inds[end] = ch[EOW]
+        d[w] = inds
+    end
+    return d
 end
 
 
