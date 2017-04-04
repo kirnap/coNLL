@@ -49,7 +49,8 @@ function test_different_words_CNN()
     info("Multiple batch correction passed")
 
     # equation 5 in the paper
-    x = pool(tanh(conv4(H,brep_conv) .+ bias))
+    pool_winsize = l + w - 1
+    x = pool(tanh(conv4(H,brep_conv) .+ bias); window=pool_winsize)
     return (x, H, brep_conv)
 end
 !isinteractive() && test_different_words_CNN()
