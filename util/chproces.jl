@@ -16,6 +16,9 @@ function create_chvocab(f::AbstractString)
 end
 
 
+longest_word{T}(word_vocab::Dict{T, Int}) = findmax(map(length, keys(word_vocab)))[1]
+
+
 function w2cs(windex::Int32, i2w::Array{AbstractString,1}, chvoc::Dict{Char, Int})
     word = i2w[windex]
     res = Array(Int, length(word))
