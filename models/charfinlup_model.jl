@@ -9,7 +9,7 @@ function initmodel(atype, hiddens, charhidden, charembed, wordvocab, charvocab, 
     model[:back] = initweights(atype, hiddens, wordembedding, init)
     model[:char] = initweights(atype, charhidden, charembed, init)
     model[:cembed] = atype(init(charvocab, charembed))
-    model[:soft] = [ atype(2hiddens[end], wordvocab), atype(init(1, wordvocab)) ]
+    model[:soft] = [ atype(init(2hiddens[end], wordvocab)), atype(init(1, wordvocab)) ]
     return model
 end
 
@@ -65,6 +65,7 @@ function charbilstm(model, chstates, states, sequence, i2w, chvocab, lval=[])
         embeddings[i] = charembed(model[:char], model[:cembed], chstates, sequence[i], i2w, chvocab, atype)
     end
 
+
     # forward lstm
     fhiddens = Array(Any, length(sequence))
     sf = copy(states)
@@ -87,7 +88,8 @@ function charbilstm(model, chstates, states, sequence, i2w, chvocab, lval=[])
 
     # merge layer
     for i=1:length(fhiddens)
-        ypred = hcat(fhiddens[i], bhiddens[i]) * model[:soft][1] .+ model[:soft][2]
+        input = hcat(fhiddens[i], bhiddens[i])
+        ypred = input * model[:soft][1] .+ model[:soft][2]
         total += logprob(sequence[i], ypred)
         count += length(sequence[i])
     end
