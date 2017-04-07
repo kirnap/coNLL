@@ -36,10 +36,9 @@ end
 """
 Reads from infinite stream modifies the s paramater in the light of sequence lengths,
 it modifies the s argument and such that it contains what i called information tuple:
-(maybe_unk_id, realid) -> maybe_unk_id is the output vocabulary, realid is the input for char levels
+(outid, inid) -> outid is the the output vocabulary to use in softmax, inid is the input vocabulary to use in char level lstm
 
 """
-
 function readstream!(f::IO,
                      s::Dict{Int64, Array{Any, 1}},
                      vocab::Dict{AbstractString, Int64},
@@ -66,5 +65,59 @@ function readstream!(f::IO,
         push!(s[skey], seq)
         k += 1
     end
-end    
+end
 
+
+function mbatch(sequences::Array{Any, 1}, batchsize::Int)
+    seqlen = length(sequences[1])
+    data = Array(Any, seqlen)
+    for cursor=1:seqlen
+        d = Array(Tuple{Int32, Int32}, batchsize)
+        for i=1:batchsize
+            d[i] = sequences[i][cursor]
+        end
+        data[cursor] = d
+    end
+    return data
+end
+
+
+function nextbatch(f::IO,
+                   sdict::Dict{Int64, Array{Any, 1}},
+                   vocab::Dict{AbstractString, Int64},
+                   realvocab::Dict{AbstractString, Int64},
+                   batchsize;
+                   o...)
+    
+    slens = collect(filter(x->length(sdict[x])>=batchsize, keys(sdict)))
+    if length(slens) < 10
+        readstream!(f, sdict, vocab, realvocab; o...)
+        slens = collect(filter(x->length(sdict[x])>=batchsize, keys(sdict)))
+        if length(slens) == 0
+            return nothing
+        end
+    end
+    slen = rand(slens)
+    sequence = sdict[slen][1:batchsize]
+    deleteat!(sdict[slen], 1:batchsize)
+    return mbatch(sequence, batchsize)
+end
+
+
+"""
+bytpe: out -> give "unk"ed version of the word, give normal version otherwise.
+"""
+function ibuild_sentence(i2w::Array{AbstractString, 1}, sequence::Array{Any, 1}, kth::Int; btype=:out, verbose=true)
+    sentence = Any[]
+    for i=1:length(sequence)
+        z = sequence[i][kth]
+        index = ((btype == :out) ? z[1] : z[2])
+        push!(sentence, i2w[index])
+    end
+    if verbose
+        for item in sentence; print("$item ");end;
+    else
+        return sentence
+    end
+
+end
