@@ -96,7 +96,7 @@ function ibuild_sentence(index_to_word::Array{AbstractString,1}, sequence::Array
 end
 
 
-function create_testdata(file::AbstractString, vocab::Dict{AbstractString, Int64}, batchsize::Int; ulimit=30, llimit=3)
+function create_testdata(file::AbstractString, vocab::Dict{AbstractString, Int64}, batchsize::Int; ulimit=3000, llimit=0)
     stream = open(file)
     sdict = Dict{Int64, Array{Any, 1}}();
     for line in eachline(stream)
