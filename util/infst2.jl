@@ -1,7 +1,12 @@
 # Infinite stream processing version 2, don't give <unk> as an input to model
-SOS = "<s>"
-EOS = "</s>"
-UNK = "<unk>"
+const SOS = "<s>"
+const EOS = "</s>"
+const UNK = "<unk>"
+
+# character constants
+const PAD = '⋮'
+const SOW = '↥'
+const EOW = 'Ϟ'
 
 
 function create_vocab(vocabfile::AbstractString)
@@ -30,7 +35,6 @@ function create_vocab(vocabfile::AbstractString)
     end
     return result
 end
-
 
 
 """
@@ -119,5 +123,76 @@ function ibuild_sentence(i2w::Array{AbstractString, 1}, sequence::Array{Any, 1},
     else
         return sentence
     end
+end
 
+
+function create_chvocab(f::AbstractString)
+    res = Dict{Char, Int}(PAD=>1, SOW=>2, EOW=>3)
+    stream = open(f)
+    for line in eachline(f)
+        for char in line
+             (char == ' ') && continue
+            get!(res, char, 1+length(res))
+        end
+    end
+    return res
+end
+
+
+longest_word{T}(word_vocab::Dict{T, Int}) = findmax(map(length, keys(word_vocab)))[1]
+
+
+"""
+wids : batch of words in (outid, inid) -> outid is the softmax layer id, inid is the char level id,
+charlup only returns the input to char level lstms
+"""
+function charlup(wids::Array{Tuple{Int32,Int32},1}, i2w_all::Array{AbstractString, 1}, ch::Dict{Char, Int})
+    words = map(x->i2w_all[x[2]], wids)
+    critic = findmax(map(length, words))[1]
+
+    batchsize = length(words)
+    data = Array(Any, critic+2)
+    data[1] = fill!(zeros(Int32, batchsize), ch[SOW])
+    masks = Array(Any, critic+2)
+    masks[1] = ones(Int32, batchsize, 1)
+    for cursor=1:critic+1 # to pad EOW to the end of the word
+        d = Array(Int32, batchsize)
+        mask = ones(Float32, batchsize, 1)
+        @inbounds for i=1:batchsize
+            word = words[i]
+            if length(word) < critic
+                if length(word) >= cursor
+                    d[i] = ch[word[cursor]]
+                elseif length(word)+1 == cursor
+                    d[i] = ch[EOW]
+                else
+                    d[i] = ch[PAD]
+                    mask[i] = 0
+                end
+            else
+                if cursor>critic
+                    d[i] = ch[EOW]
+                else
+                    d[i] = ch[word[cursor]]
+                end
+            end
+        end
+        data[cursor + 1] = d
+        masks[cursor + 1] = mask
+    end
+    return data, masks
+end
+
+
+function ibuild_wordflup(i2c::Array{Char, 1}, data::Array{Any, 1}, kth::Int; verbose=false)
+    word = Any[]
+    for i=1:length(data)
+        z = data[i][kth]
+        push!(word, i2c[z])
+    end
+    if verbose
+        for item in word; print("$item");end;println()
+    else
+        return word
+    end
 end
