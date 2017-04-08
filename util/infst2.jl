@@ -126,12 +126,30 @@ function ibuild_sentence(i2w::Array{AbstractString, 1}, sequence::Array{Any, 1},
 end
 
 
+function create_chvocab(word_vocab::Dict{AbstractString, Int64})
+    res = Dict{Char, Int}(PAD=>1, SOW=>2, EOW=>3)
+    for k in keys(word_vocab)
+        for ch in k
+            if ch == PAD || ch == SOW || ch == EOW
+                warn("$ch is used in vocabulary")
+            end
+            (ch == ' ') && continue
+            get!(res, ch, 1+length(res))
+        end
+    end
+    return res
+end
+
+
 function create_chvocab(f::AbstractString)
     res = Dict{Char, Int}(PAD=>1, SOW=>2, EOW=>3)
     stream = open(f)
     for line in eachline(f)
         for char in line
-             (char == ' ') && continue
+            if char == PAD || char == SOW || char == EOW
+                warn("$char is used in vocabulary")
+            end
+            (char == ' ') && continue
             get!(res, char, 1+length(res))
         end
     end
@@ -162,7 +180,7 @@ function charlup(wids::Array{Tuple{Int32,Int32},1}, i2w_all::Array{AbstractStrin
             word = words[i]
             if length(word) < critic
                 if length(word) >= cursor
-                    d[i] = ch[word[cursor]]
+                    d[i] = get(ch, word[cursor], ch[PAD]) #ch[word[cursor]], there may be unk characters
                 elseif length(word)+1 == cursor
                     d[i] = ch[EOW]
                 else
@@ -173,7 +191,7 @@ function charlup(wids::Array{Tuple{Int32,Int32},1}, i2w_all::Array{AbstractStrin
                 if cursor>critic
                     d[i] = ch[EOW]
                 else
-                    d[i] = ch[word[cursor]]
+                    d[i] = get(ch, word[cursor], ch[PAD]) # unking operation
                 end
             end
         end

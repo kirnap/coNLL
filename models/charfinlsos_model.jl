@@ -102,9 +102,11 @@ end
 gradcharbilstm = grad(charbilstm)
 
 
-function train(model, state, sequence, opts, lval)
-    gloss = gradbilstm(model, state, sequence, lval)
+function train(model, chstates, states, sequence, i2w_all, chvocab, opts)
+    lval = []
+    gloss = gradcharbilstm(model, chstates, states, sequence, i2w_all, chvocab, lval)
     update!(model, gloss, opts)
+    return lval[1]
 end
 
 
