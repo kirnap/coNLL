@@ -180,7 +180,11 @@ function charlup(wids::Array{Tuple{Int32,Int32},1}, i2w_all::Array{AbstractStrin
             word = words[i]
             if length(word) < critic
                 if length(word) >= cursor
-                    d[i] = get(ch, word[cursor], ch[PAD]) #ch[word[cursor]], there may be unk characters
+                    try
+                        d[i] = get(ch, word[cursor], ch[PAD]) #ch[word[cursor]], there may be unk characters
+                    catch
+                        d[i] = ch[PAD]
+                    end
                 elseif length(word)+1 == cursor
                     d[i] = ch[EOW]
                 else
@@ -191,7 +195,11 @@ function charlup(wids::Array{Tuple{Int32,Int32},1}, i2w_all::Array{AbstractStrin
                 if cursor>critic
                     d[i] = ch[EOW]
                 else
-                    d[i] = get(ch, word[cursor], ch[PAD]) # unking operation
+                    try
+                        d[i] = get(ch, word[cursor], ch[PAD]) # unking operation
+                    catch
+                        d[i] = ch[PAD]
+                    end
                 end
             end
         end
