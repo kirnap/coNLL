@@ -48,7 +48,7 @@ function main(args=ARGS)
         info("saving vocabularies to $x")
         save(o[:vosave], "char_vocab", char_vocab, "word_vocab", word_vocab_out)
     end
-
+    flush(STDOUT)
     
     # model initialization
     charhiddens = [o[:embedding]]; wordvsize = length(word_vocab_out); chvsize = length(char_vocab);
@@ -61,6 +61,7 @@ function main(args=ARGS)
 
     ids = nextbatch(dstream, s, word_vocab_out, word_vocab_all, o[:batchsize]; maxlines=100, ulimit=ulimit)
     bcount = 1
+    info("Training started...")
     while ids !=nothing
         this_loss = train(m, char_states, states, ids, i2w_all, char_vocab, opts)
 
@@ -77,6 +78,7 @@ function main(args=ARGS)
             println("Running average loss is $perp")
             moc = convertmodel(m)
             save(o[:savefile], "model", moc)
+            flush(STDOUT)
         end
 
         
