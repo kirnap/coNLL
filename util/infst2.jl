@@ -13,6 +13,7 @@ function create_vocab(vocabfile::AbstractString)
     ercount = 0
     result = Dict{AbstractString, Int}(SOS=>1, EOS=>2, UNK=>3)
     open(vocabfile) do f
+        lcount = 1
         for line in eachline(f)
             words= split(line)
             try
@@ -30,7 +31,12 @@ function create_vocab(vocabfile::AbstractString)
                 end
             end
             word = words[1]
+            if length(word) > 65
+                isinteractive() && warn("Too long words at line $lcount")
+                word = UNK
+            end
             get!(result, word, 1+length(result))
+            lcount += 1
         end
     end
     return result
@@ -206,6 +212,44 @@ function charlup(wids::Array{Tuple{Int32,Int32},1}, i2w_all::Array{AbstractStrin
         data[cursor + 1] = d
         masks[cursor + 1] = mask
     end
+    return data, masks
+end
+
+
+function charlup2(wids::Array{Tuple{Int32,Int32},1}, i2w_all::Array{AbstractString, 1}, ch::Dict{Char, Int})
+    words = map(x->i2w_all[x[2]], wids)
+    pad_critic = findmax(map(length, words))[1] + 2 # + 2 for start and and end characters
+
+    batchsize = length(words)
+    data = Array(Any, pad_critic)
+    masks = Array(Any, pad_critic)
+
+    for cursor=1:pad_critic-1
+        d = Array(Int32, batchsize)
+        mask = ones(Float32, batchsize, 1)
+        @inbounds for i=1:batchsize
+            word = words[i]
+            tostart = pad_critic - (length(word)+2) + 1
+            if cursor == tostart
+                d[i] = ch[SOW]
+            elseif cursor > tostart
+                try
+                   ch_place = cursor - tostart # it shows which chracter of word in
+                   d[i] = ch[word[ch_place]]
+                catch
+                    d[i] = ch[PAD]
+                    mask[i] = 0.0
+                end
+            else
+                d[i] = ch[PAD]
+                mask[i] = 0.0
+            end
+        end
+        data[cursor] = d
+        masks[cursor] = mask
+    end
+    data[end] = fill!(zeros(Int32, batchsize), ch[EOW])
+    masks[end] = ones(Float32, batchsize, 1)
     return data, masks
 end
 
