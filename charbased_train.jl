@@ -11,6 +11,7 @@ function main(args=ARGS)
         ("--vocabfile"; required=true; help="Vocabulary file to train a model")
         ("--wordsfile"; required=true; help="Words file used to hold all words")
         ("--vosave"; help="Words file used to hold all words")
+        ("--loadfile"; help="Loadfile for model loading")
         ("--atype"; default=(gpu() >= 0 ? "KnetArray{Float32}" : "Array{Float32}"))
         ("--hiddens"; arg_type=Int; nargs='+'; default=[300]; help="hidden layer configuration")
         ("--embedding"; arg_type=Int; default=350)
@@ -52,7 +53,12 @@ function main(args=ARGS)
     
     # model initialization
     charhiddens = [o[:embedding]]; wordvsize = length(word_vocab_out); chvsize = length(char_vocab);
-    m = initmodel(atype, o[:hiddens], charhiddens, o[:chembedding], wordvsize, chvsize)
+    if o[:loadfile] == nothing
+        m = initmodel(atype, o[:hiddens], charhiddens, o[:chembedding], wordvsize, chvsize)
+    else # to fix broken trainings
+        x = load(o[:loadfile])
+        m = revconvert(x["model"]) # for reverse converting the model
+    end
     char_states = initstate(atype, charhiddens, o[:batchsize])
     states = initstate(atype, o[:hiddens], o[:batchsize])
     opts = oparams(m, Adam; gclip=o[:gclip])
