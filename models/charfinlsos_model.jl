@@ -19,9 +19,6 @@ end
 
 function chlstm(weight, bias, hidden, cell, input; mask=nothing)
     gates   = hcat(input,hidden) * weight .+ bias
-    if mask != nothing
-        gates = gates .* mask
-    end
     hsize   = size(hidden,2)
     forget  = sigm(gates[:,1:hsize])
     ingate  = sigm(gates[:,1+hsize:2hsize])
@@ -29,6 +26,10 @@ function chlstm(weight, bias, hidden, cell, input; mask=nothing)
     change  = tanh(gates[:,1+3hsize:end])
     cell    = cell .* forget + ingate .* change
     hidden  = outgate .* tanh(cell)
+
+    # masking operation
+    cell    = cell .* mask
+    hidden  = hidden .* mask
     return (hidden,cell)
 end
 
@@ -46,7 +47,7 @@ end
 function charembed(mchar, mcembed, states, wids, i2w_all, ch, atype)
     schar = copy(states)
 
-    (data, masks) = charlup(wids, i2w_all, ch)
+    (data, masks) = charlup2(wids, i2w_all, ch)
     h = similar(schar[1])
     for (c, m) in zip(data, masks)
         embed = mcembed[c, :]
