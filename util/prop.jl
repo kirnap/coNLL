@@ -74,3 +74,9 @@ oparams{T<:Number}(::KnetArray{T},otype; o...)=otype(;o...)
 oparams{T<:Number}(::Array{T},otype; o...)=otype(;o...)
 oparams(a::Associative,otype; o...)=Dict(k=>oparams(v,otype;o...) for (k,v) in a)
 oparams(a,otype; o...)=map(x->oparams(x,otype;o...), a)
+
+
+# reverse model converted for loading from file
+revconvertmodel{T<:Number}(x::Array{T}) = convert(KnetArray{T}, x)
+revconvertmodel(a::Associative) = Dict(k=>revconvertmodel(v) for (k, v) in a)
+revconvertmodel(a) = map(x->revconvertmodel(x), a)
