@@ -81,8 +81,7 @@ function main(args=ARGS)
             flush(STDOUT)
         end
 
-        
-        ids = nextbatch(dstream, s, word_vocab_out, word_vocab_all, o[:batchsize]; maxlines=300)
+        ids = nextbatch(dstream, s, word_vocab_out, word_vocab_all, o[:batchsize]; maxlines=300, ulimit=ulimit)
         bcount += 1
     end
 
