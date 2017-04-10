@@ -57,7 +57,7 @@ function main(args=ARGS)
         m = initmodel(atype, o[:hiddens], charhiddens, o[:chembedding], wordvsize, chvsize)
     else # to fix broken trainings
         x = load(o[:loadfile])
-        m = revconvert(x["model"]) # for reverse converting the model
+        m = revconvertmodel(x["model"]) # to convert KnetArray
     end
     char_states = initstate(atype, charhiddens, o[:batchsize])
     states = initstate(atype, o[:hiddens], o[:batchsize])
@@ -81,7 +81,7 @@ function main(args=ARGS)
         # checkpoints and save
         if bcount % 4000 == 0
             perp = exp(loss)
-            println("Running average loss is $perp")
+            println("Running average perlexity is $perp")
             moc = convertmodel(m)
             save(o[:savefile], "model", moc)
             flush(STDOUT)
