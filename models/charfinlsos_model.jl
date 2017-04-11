@@ -34,6 +34,9 @@ function chlstm(weight, bias, hidden, cell, input; mask=nothing)
 end
 
 
+"""
+Multilayer lstm forward function in single time step
+"""
 function chforw(weight, states, input; mask=nothing)
     x = input
     for i=1:2:length(states)
@@ -44,6 +47,10 @@ function chforw(weight, states, input; mask=nothing)
 end
 
 
+"""
+mchar, mcembed, states: model's character lstm, model's character embeddings, char-lstm states respectively.
+wids, i2w_all, ch: batch of words, index to word array and character vocabulary respectively.
+"""
 function charembed(mchar, mcembed, states, wids, i2w_all, ch, atype)
     schar = copy(states)
 
@@ -56,6 +63,7 @@ function charembed(mchar, mcembed, states, wids, i2w_all, ch, atype)
     end
     return h
 end
+
 
 
 function charbilstm(model, chstates, states, sequence, i2w_all, chvocab, lval=[])
