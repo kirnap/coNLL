@@ -13,7 +13,6 @@ function create_vocab(vocabfile::AbstractString)
     ercount = 0
     result = Dict{AbstractString, Int}(SOS=>1, EOS=>2, UNK=>3)
     open(vocabfile) do f
-        lcount = 1
         for line in eachline(f)
             words= split(line)
             try
@@ -32,11 +31,10 @@ function create_vocab(vocabfile::AbstractString)
             end
             word = words[1]
             if length(word) > 65
-                isinteractive() && warn("Too long words at line $lcount")
+                isinteractive() && warn("Too long words in file $vocabfile")
                 word = UNK
             end
             get!(result, word, 1+length(result))
-            lcount += 1
         end
     end
     return result
@@ -265,4 +263,38 @@ function ibuild_wordflup(i2c::Array{Char, 1}, data::Array{Any, 1}, kth::Int; ver
     else
         return word
     end
+end
+
+
+"""
+Find the maximum length word in vocabulary, padds each word based on that length
+"""
+function create_conv_vocab(word_vocab_all::Dict{AbstractString, Int})
+    maxlen = longest_word(word_vocab_all)
+    result = Dict{AbstractString, Int}()
+    for word in keys(word_vocab_all)
+        word2 = string(SOW) * word * string(EOW)
+        new_word = string(word2, string(PAD)^(maxlen-length(word)))
+        result[new_word] = word_vocab_all[word]
+    end
+    return result
+end
+
+
+function cbatch4conv(wids::Array{Tuple{Int32, Int32}, 1}, i2w_all_conv::Array{AbstractString, 1}, ch::Dict{Char, Int})
+    batchsize = length(wids)
+    words = mapreduce(x->i2w_all_conv[x[2]], string, "", wids) # concatanete each word
+    maxlen = length(words)
+
+    data = zeros(Int32, maxlen)
+    mask = zeros(Int32, maxlen, 1)
+    for (i,c) in enumerate(words)
+        if c == PAD
+            data[i] = ch[PAD]
+        else
+            data[i] = ch[c]
+            mask[i, 1] = 1
+        end
+    end
+    return (data, mask)
 end
