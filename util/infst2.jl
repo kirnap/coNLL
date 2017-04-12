@@ -281,7 +281,7 @@ function create_conv_vocab(word_vocab_all::Dict{AbstractString, Int})
 end
 
 
-function cbatch4conv(wids::Array{Tuple{Int32, Int32}, 1}, i2w_all_conv::Array{AbstractString, 1}, ch::Dict{Char, Int})
+function cbatch4conv(wids::Array{Tuple{Int32, Int32}, 1}, i2w_all_conv::Array{AbstractString, 1}, ch::Dict{Char, Int}, atype::DataType)
     batchsize = length(wids)
     words = mapreduce(x->i2w_all_conv[x[2]], string, "", wids) # concatanete each word
     maxlen = length(words)
@@ -296,5 +296,6 @@ function cbatch4conv(wids::Array{Tuple{Int32, Int32}, 1}, i2w_all_conv::Array{Ab
             mask[i, 1] = 1
         end
     end
-    return (data, mask)
+    mcon = convert(atype, mask)
+    return (data, mcon)
 end
