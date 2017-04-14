@@ -21,6 +21,7 @@ function test_inf2mask()
     i2c = Array(Char, length(ch1))
     for (k, v) in ch1; i2c[v] = k; end;
     wids = ids[rand(1:length(ids))]
+    # in order to make sure about the changes in charlup2 you need to play with line 25
     (data, masks) = charlup2(wids, i2w_all, ch1) # this is input for lstm character level, data needs to be the real version of the words
 
     real_words = map(x->i2w_all[x[2]], wids)
