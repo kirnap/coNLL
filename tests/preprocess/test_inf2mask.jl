@@ -21,7 +21,7 @@ function test_inf2mask()
     i2c = Array(Char, length(ch1))
     for (k, v) in ch1; i2c[v] = k; end;
     wids = ids[rand(1:length(ids))]
-    (data, masks) = charlup(wids, i2w_all, ch1) # this is input for lstm character level, data needs to be the real version of the words
+    (data, masks) = charlup2(wids, i2w_all, ch1) # this is input for lstm character level, data needs to be the real version of the words
 
     real_words = map(x->i2w_all[x[2]], wids)
     unked_words = map(x->i2w_out[x[1]], wids)
@@ -32,7 +32,7 @@ function test_inf2mask()
     for i=1:length(data)
         item = data[i]; mitem= masks[i];
         chars = Any[]
-        for c in item; append!(chars, i2c[c]);end;
+        for c in item;append!(chars, i2c[c]);end;
         ds = Any[]
         for k=1:length(chars)
             x = (chars[k], mitem[k])
