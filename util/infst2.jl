@@ -292,7 +292,7 @@ function cbatch4conv(wids::Array{Tuple{Int32, Int32}, 1}, i2w_all_conv::Array{Ab
         if c == PAD
             data[i] = ch[PAD]
         else
-            data[i] = ch[c]
+            data[i] = get(ch, c, ch[PAD])
             mask[i, 1] = 1
         end
     end
