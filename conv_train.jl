@@ -93,10 +93,6 @@ function main(args=ARGS)
 
         ids = nextbatch(dstream, s, word_vocab_out, word_vocab_all, o[:batchsize]; maxlines=maxlines, ulimit=ulimit)
         bcount += 1
-        @show exp(loss)
-        (bcount == 10000) && break
-
-
     end
     
 end
