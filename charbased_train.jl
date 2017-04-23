@@ -1,6 +1,6 @@
 using Knet, ArgParse, JLD
 include("util/infst2.jl")
-include("models/charfinlsos_model.jl")
+include("models/charfinlsos2_model.jl")
 
 function main(args=ARGS)
     s = ArgParseSettings()
