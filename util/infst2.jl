@@ -145,16 +145,20 @@ function create_chvocab(word_vocab::Dict{AbstractString, Int64})
 end
 
 
-function create_chvocab(f::AbstractString)
+function create_chvocab(f::AbstractString, ulimit::Int=20000)
     res = Dict{Char, Int}(PAD=>1, SOW=>2, EOW=>3)
-    stream = open(f)
-    for line in eachline(f)
-        for char in line
-            if char == PAD || char == SOW || char == EOW
-                warn("$char is used in vocabulary")
+    counter = 0
+    open(f) do file
+        for line in eachline(file)
+            counter += 1; (counter > ulimit) && break
+            word = split(line)[2]
+            for c in word
+                if c == PAD || c == SOW || c == EOW
+                    warn("$c is used in vocabulary")
+                end
+                (c == ' ') && continue
+                get!(res, c, 1+length(res))
             end
-            (char == ' ') && continue
-            get!(res, char, 1+length(res))
         end
     end
     return res
