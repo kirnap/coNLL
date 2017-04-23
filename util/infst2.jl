@@ -32,7 +32,7 @@ function create_vocab(vocabfile::AbstractString)
             word = words[1]
             if length(word) > 65
                 isinteractive() && warn("Too long words in file $vocabfile")
-                word = UNK
+                word = word[1:65]
             end
             get!(result, word, 1+length(result))
         end
@@ -151,7 +151,8 @@ function create_chvocab(f::AbstractString, ulimit::Int=20000)
     open(f) do file
         for line in eachline(file)
             counter += 1; (counter > ulimit) && break
-            word = split(line)[2]
+            word = line
+            # word = split(line)[2] no need because not to use count file
             for c in word
                 if c == PAD || c == SOW || c == EOW
                     warn("$c is used in vocabulary")
