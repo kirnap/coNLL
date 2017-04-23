@@ -299,3 +299,20 @@ function cbatch4conv(wids::Array{Tuple{Int32, Int32}, 1}, i2w_all_conv::Array{Ab
     mcon = convert(atype, mask)
     return (data, mcon)
 end
+
+
+function calculate_coverage(vocabfile::AbstractString, vocabsize::Int)
+    total = covered = 0.0
+    open(vocabfile) do file
+        counter = 0
+        for line in eachline(file)
+            counter += 1
+            occurence = parse(Float64, split(line)[1])
+            (counter <= vocabsize) && (covered += occurence)
+            total += occurence
+        end
+    end
+    rate = (covered / total) * 100
+    println("Vocabsize $vocabsize | Coverage rate $rate")
+    return rate
+end
