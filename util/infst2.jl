@@ -4,9 +4,9 @@ const EOS = "</s>"
 const UNK = "<unk>"
 
 # character constants
-const PAD = '⋮'
-const SOW = '↥'
-const EOW = 'Ϟ'
+const PAD = Char(0x0011)
+const SOW = Char(0x0012)
+const EOW = Char(0x0013)
 
 
 function create_vocab(vocabfile::AbstractString)
