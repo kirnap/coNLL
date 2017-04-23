@@ -10,6 +10,7 @@ function main(args=ARGS)
         ("--devfile"; help="dev data to test perplexity")
         ("--vocabfile"; required=true; help="Vocabulary file to train a model")
         ("--wordsfile"; required=true; help="Words file used to hold all words")
+        ("--charlines"; arg__type=Int; default=20000; help="Numoflines for character initialization")
         ("--vosave"; help="Words file used to hold all words")
         ("--loadfile"; help="Loadfile for model loading")
         ("--atype"; default=(gpu() >= 0 ? "KnetArray{Float32}" : "Array{Float32}"))
@@ -42,11 +43,11 @@ function main(args=ARGS)
     
 
     # character level initialization
-    char_vocab = create_chvocab(word_vocab_out)
-    info("Character vocabulary length: $(length(char_vocab))")
+    char_vocab = create_chvocab(o[:wordsfile], o[:charlines])
+    println("Character vocabulary length: $(length(char_vocab))")
     if o[:vosave] != nothing
         x = o[:vosave]
-        info("saving vocabularies to $x")
+        println("saving vocabularies to $x")
         save(o[:vosave], "char_vocab", char_vocab, "word_vocab", word_vocab_out)
     end
     flush(STDOUT)
