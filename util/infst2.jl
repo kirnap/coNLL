@@ -320,3 +320,26 @@ function calculate_coverage(vocabfile::AbstractString, vocabsize::Int)
     println("Vocabsize $vocabsize | Coverage rate $rate")
     return rate
 end
+
+
+word_arrange(pad_critic::Int, x::AbstractString) = string(string(PAD)^(pad_critic - length(x) -2), string(SOW), x, string(EOW))
+
+
+function charlup3(wids::Array{Tuple{Int32,Int32},1}, i2w_all::Array{AbstractString, 1}, ch::Dict{Char, Int})
+    words = map(x->i2w_all[x[2]], wids)
+    pad_critic = findmax(map(length, words))[1] + 2 # + 2 for start and and end characters
+    batchsize = length(words)
+   
+    data = [ zeros(Int32, batchsize) for i=1:pad_critic ]
+    masks = [ ones(Float32, batchsize, 1) for i=1:pad_critic ]
+    words = map(x->word_arrange(pad_critic, x), words)
+
+    @inbounds for i=1:batchsize
+        word = words[i]
+        for (cursor, char) in enumerate(word)
+            (char == PAD) && (masks[cursor][i] = 0.0)
+            data[cursor][i] = get(ch, char, ch[PAD])
+        end
+    end
+    return data, masks
+end
