@@ -10,7 +10,7 @@ function main(args=ARGS)
         ("--devfile"; help="dev data to test perplexity")
         ("--vocabfile"; required=true; help="Vocabulary file to train a model")
         ("--wordsfile"; required=true; help="Words file used to hold all words")
-        ("--charlines"; arg__type=Int; default=20000; help="Numoflines for character initialization")
+        ("--charlines"; arg_type=Int; default=40000; help="Numoflines for character initialization")
         ("--vosave"; help="Words file used to hold all words")
         ("--loadfile"; help="Loadfile for model loading")
         ("--atype"; default=(gpu() >= 0 ? "KnetArray{Float32}" : "Array{Float32}"))
@@ -25,7 +25,7 @@ function main(args=ARGS)
     isa(args, AbstractString) && (args=split(args))
     o = parse_args(args, s; as_symbols=true)
     atype = eval(parse(o[:atype]))
-    println("Model file: charfinlsos_model.jl")
+    println("Model file: charfinlsos2_model.jl")
 
     for (k, v) in o
         println("$k => $v")
@@ -38,19 +38,20 @@ function main(args=ARGS)
     i2w_all = Array(AbstractString, length(word_vocab_all))
     for (k, v) in word_vocab_all; i2w_all[v] = k;end;
     dstream = open(o[:trainfile]); s = Dict{Int64, Array{Any, 1}}();
-    readstream!(dstream, s, word_vocab_out, word_vocab_all; maxlines=1000)
+    readstream!(dstream, s, word_vocab_out, word_vocab_all; maxlines=1000, ulimit=ulimit)
     
     
 
     # character level initialization
     char_vocab = create_chvocab(o[:wordsfile], o[:charlines])
     println("Character vocabulary length: $(length(char_vocab))")
+    flush(STDOUT)
     if o[:vosave] != nothing
         x = o[:vosave]
         println("saving vocabularies to $x")
         save(o[:vosave], "char_vocab", char_vocab, "word_vocab", word_vocab_out)
     end
-    flush(STDOUT)
+
     
     # model initialization
     charhiddens = [o[:embedding]]; wordvsize = length(word_vocab_out); chvsize = length(char_vocab);
@@ -68,7 +69,8 @@ function main(args=ARGS)
 
     ids = nextbatch(dstream, s, word_vocab_out, word_vocab_all, o[:batchsize]; maxlines=100, ulimit=ulimit)
     bcount = 1
-    info("Training started...")
+    println("Training started...")
+    flush(STDOUT)
     while ids !=nothing
         this_loss = train(m, char_states, states, ids, i2w_all, char_vocab, opts)
 
@@ -84,7 +86,7 @@ function main(args=ARGS)
             perp = exp(loss)
             println("Running average perlexity is $perp")
             moc = convertmodel(m)
-            save(o[:savefile], "model", moc)
+            save(o[:savefile], "model", moc, "char_vocab", char_vocab, "word_vocab", word_vocab_out)
             flush(STDOUT)
         end
 
