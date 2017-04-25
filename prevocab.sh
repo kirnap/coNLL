@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 vocab_count="$1_vocab_count"
-out_name="$1_out_vocab2"
-all_name="$1_100k_vocab2"
+out_name="$1_out_vocab"
+all_name="$1_100k_vocab"
 head -20000 $vocab_count > temp
 awk '{$1="";print $0}' temp > $out_name
 rm temp
