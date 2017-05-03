@@ -5,6 +5,7 @@ function main(args=ARGS)
     s = ArgParseSettings()
     s.exc_handler = ArgParse.debug_handler
     @add_arg_table s begin
+        ("--loadfile" ; help="Load model file from character based training to use its char and word vocab")
         ("--trainfile"; help="Infinite stream training file")
         ("--devfile"; help="dev data to test perplexity")
         ("--vocabfile"; help="Vocabulary file to train a model")
@@ -15,7 +16,7 @@ function main(args=ARGS)
         ("--loadvocab"; help="JLD file holds the character and word level vocabulary")
 
         ("--atype"; default=(gpu() >= 0 ? "KnetArray{Float32}" : "Array{Float32}"))
-        ("--hiddens"; arg_type=Int; nargs='+'; default=[300]; help="hidden layer configuration")
+        ("--hiddens"; arg_type=Int; nargs='+'; default=[350]; help="hidden layer configuration")
         ("--filterbank"; arg_type=Int; default=500; help="number of features")
         ("--windowlen"; arg_type=Int; default=5; help="Window length of convolution filters")
         ("--chembed"; arg_type=Int; default=15)
@@ -33,19 +34,24 @@ function main(args=ARGS)
         println("$k => $v")
     end
 
-    # word data initilaziation
-    if o[:loadvocab] == nothing
-        word_vocab_out = create_vocab(o[:vocabfile])
-
-        # character level initialization
-        # TODO decide how to do unique character counting
+    if o[:loadfile] == nothing
+        # word data initilaziation
+        if o[:loadvocab] == nothing
+            word_vocab_out = create_vocab(o[:vocabfile])
+            
+            # character level initialization
+            # TODO decide how to do unique character counting
+        else
+            vocabs = load(o[:loadvocab])
+            word_vocab_out = vocabs["word_vocab"]
+            char_vocab = vocabs["char_vocab"]
+        end
     else
-        vocabs = load(o[:loadvocab])
-        word_vocab_out = vocabs["word_vocab"]
-        char_vocab = vocabs["char_vocab"]
+        model_bundle = load(o[:loadfile])
+        word_vocab_out = model_bundle["word_vocab"]
+        char_vocab = model_bundle["char_vocab"]
+        empty!(model_bundle)
     end
-
-    # TODO put vocabulary saving lines
 
     
     ulimit = 28; maxlines = 200;
@@ -87,7 +93,7 @@ function main(args=ARGS)
             perp = exp(loss)
             println("Running average perlexity is $perp")
             moc = convertmodel(m)
-            save(o[:savefile], "model", moc)
+            save(o[:savefile], "model", moc)     # TODO put vocabulary saving lines
             flush(STDOUT)
         end
 
