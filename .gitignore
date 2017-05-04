@@ -11,6 +11,7 @@ noun_google_data
 *.DS_Store
 .AppleDouble
 .LSOverride
+*.q
 
 # Icon must end with two \r
 Icon
