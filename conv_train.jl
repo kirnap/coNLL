@@ -67,7 +67,7 @@ function main(args=ARGS)
 
     # model initialization
     chsize = length(char_vocab); wordvsize = length(word_vocab_out)
-    lw = longest_word(conv_vocab) # longest word in vocabulary
+    lw = longest_word(conv_vocab) # longest word length in vocabulary
     pwind = lw + o[:chembed] - 1 # pooling window size
 
     m = initmodel(atype, o[:hiddens], o[:windowlen], o[:filterbank], o[:chembed], chsize, wordvsize)
@@ -93,7 +93,7 @@ function main(args=ARGS)
             perp = exp(loss)
             println("Running average perlexity is $perp")
             moc = convertmodel(m)
-            save(o[:savefile], "model", moc)     # TODO put vocabulary saving lines
+            save(o[:savefile], "model", moc, "word_vocab", word_vocab_out, "char_vocab", char_vocab, "lword", lw, "pwind", pwind)
             flush(STDOUT)
         end
 
